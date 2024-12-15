@@ -9,5 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
+# Environments
+.env
+
 # PyCharm files
 .idea
