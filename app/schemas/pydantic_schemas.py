@@ -19,6 +19,11 @@ class TradingResultBase(BaseModel):
     count: int
     date: date
 
+    class Config:
+        """Allow ORM mode."""
+
+        from_attributes = True
+
 
 class TradingDatesFilter(BaseModel):
     limit: Annotated[int, Query(gt=0)] = 10
@@ -26,3 +31,18 @@ class TradingDatesFilter(BaseModel):
 
 class TradingDatesResponse(BaseModel):
     dates: Sequence[date]
+
+
+class TradingBaseFilter(BaseModel):
+    oil_id: Annotated[str | None, Query()] = None
+    delivery_type_id: Annotated[str | None, Query()] = None
+    delivery_basis_id: Annotated[str | None, Query()] = None
+
+
+class TradingDinamicsFilter(TradingBaseFilter):
+    start_date: Annotated[date, Query()] = date.today()
+    end_date: Annotated[date, Query()] = date.today()
+
+
+class TradingResultResponse(BaseModel):
+    trades: Sequence[TradingResultBase]

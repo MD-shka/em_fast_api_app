@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, declarative_base, mapped_column
 Base = declarative_base()
 
 
-class SpimexTradingResult(Base):
+class SpimexTradingResult(Base):  # type: ignore
     __tablename__ = "spimex_trading_result"
     __table_args__ = {"extend_existing": True}
 
