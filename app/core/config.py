@@ -1,25 +1,21 @@
-# app/core/config.py
+"""Configuration settings."""
 
-from dotenv import load_dotenv
-from pydantic import Field
-from pydantic_settings import BaseSettings
-
-load_dotenv()
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
-    DB_USER: str = Field(..., env="DB_USER")
-    DB_PASS: str = Field(..., env="DB_PASS")
-    DB_HOST: str = Field(..., env="DB_HOST")
-    DB_PORT: str = Field(..., env="DB_PORT")
-    DB_NAME: str = Field(..., env="DB_NAME")
+class DatabaseSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_file="/home/em_fast_api_app/.env", env_file_encoding="utf-8")
+
+    DB_USER: object = model_config.get("DB_USER")
+    DB_PASS: object = model_config.get("DB_PASS")
+    DB_NAME: object = model_config.get("DB_NAME")
+    DB_HOST: object = model_config.get("DB_HOST")
+    DB_PORT: object = model_config.get("DB_PORT")
 
     @property
-    def db_url(self) -> str:
+    def get_db_url(self):
+        """Get database URL."""
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
-    class Config:
-        env_file = ".env"
 
-
-settings = Settings()
+db_settings = DatabaseSettings()

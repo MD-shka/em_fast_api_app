@@ -17,21 +17,21 @@ router = APIRouter()
 
 @router.get("/last_trading_dates", response_model=TradingDatesResponse)
 async def get_last_trading_dates(
-    limit: TradingDatesFilter = Depends(),
+    limit_filter: TradingDatesFilter = Depends(),
     trading_service: TradingService = Depends(get_trading_service),
 ) -> TradingDatesResponse:
     """
     Get the last trading dates.
 
     Args:
-        limit: The limit of the last trading dates to return.
+        limit_filter: The limit of the last trading dates to return.
         trading_service: The trading service to use.
 
     Returns:
         TradingDatesResponse: List of the last trading dates.
     """
-    dates = await trading_service.get_last_trading_dates(limit.limit)
-    return TradingDatesResponse(dates=dates)
+    last_trading_dates = await trading_service.get_last_trading_dates(limit_filter.limit)
+    return TradingDatesResponse(dates=last_trading_dates)
 
 
 @router.get("/dynamics", response_model=TradingResultResponse)
