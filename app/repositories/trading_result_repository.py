@@ -51,7 +51,7 @@ class TradingResultRepository:
         trading_filter: TradingDinamicsFilter,
     ) -> Sequence[TradingResultBase]:
         """Method returns the dynamics of the trading results from the database."""
-        stmt = select(Spimex).order_by(Spimex.date.desc())
+        stmt = select(Spimex).order_by(Spimex.date.desc()).limit(trading_filter.limit).offset(trading_filter.offset)
         return await self.__get_filtred_trading_results(stmt, trading_filter)
 
     async def get_trading_results(
@@ -63,5 +63,7 @@ class TradingResultRepository:
             select(Spimex)
             .distinct(Spimex.oil_id, Spimex.delivery_type_id, Spimex.delivery_basis_id)
             .order_by(Spimex.oil_id, Spimex.delivery_type_id, Spimex.delivery_basis_id)
+            .limit(trading_filter.limit)
+            .offset(trading_filter.offset)
         )
         return await self.__get_filtred_trading_results(stmt, trading_filter)
