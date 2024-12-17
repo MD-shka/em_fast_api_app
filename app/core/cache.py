@@ -10,7 +10,7 @@ from redis.asyncio import Redis  # type: ignore
 
 from app.core.config import settings as s
 
-redis_client: Redis = Redis.from_url(s.get_redis_url, socket_timeout=5)
+redis_client: Redis = Redis.from_url(s.get_redis_url)
 
 
 def get_ttl() -> int:
