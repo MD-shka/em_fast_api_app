@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends
 
 from app.api.v1.dependencies import get_trading_service
+from app.core.cache import cache
 from app.schemas.pydantic_schemas import (
     TradingBaseFilter,
     TradingDatesFilter,
@@ -16,57 +17,60 @@ router = APIRouter()
 
 
 @router.get("/last_trading_dates", response_model=TradingDatesResponse)
+@cache()
 async def get_last_trading_dates(
-    limit_filter: TradingDatesFilter = Depends(),
+    filters: TradingDatesFilter = Depends(),
     trading_service: TradingService = Depends(get_trading_service),
 ) -> TradingDatesResponse:
     """
     Get the last trading dates.
 
     Args:
-        limit_filter: The limit of the last trading dates to return.
+        filters: The limit of the last trading dates to return.
         trading_service: The trading service to use.
 
     Returns:
         TradingDatesResponse: List of the last trading dates.
     """
-    last_trading_dates = await trading_service.get_last_trading_dates(limit_filter.limit)
+    last_trading_dates = await trading_service.get_last_trading_dates(filters.limit)
     return TradingDatesResponse(dates=last_trading_dates)
 
 
 @router.get("/dynamics", response_model=TradingResultResponse)
+@cache()
 async def get_dynamics(
-    trading_filter: TradingDinamicsFilter = Depends(),
+    filters: TradingDinamicsFilter = Depends(),
     trading_service: TradingService = Depends(get_trading_service),
 ) -> TradingResultResponse:
     """
     Get the trading reslts in period.
 
     Args:
-        trading_filter: The filter criteria for retrieving trading dynamics.
+        filters: The filter criteria for retrieving trading dynamics.
         trading_service: The trading service to use.
 
     Returns:
         TradingResultResponse: List trading dynamics data based on the filter.
     """
-    trades = await trading_service.get_dynamics(trading_filter)
+    trades = await trading_service.get_dynamics(filters)
     return TradingResultResponse(trades=trades)
 
 
 @router.get("/trading_result", response_model=TradingResultResponse)
+@cache()
 async def get_trading_result(
-    trading_filter: TradingBaseFilter = Depends(),
+    filters: TradingBaseFilter = Depends(),
     trading_service: TradingService = Depends(get_trading_service),
 ) -> TradingResultResponse:
     """
     Get the last unique trading results.
 
     Args:
-        trading_filter: The filter criteria for retrieving trading results.
+        filters: The filter criteria for retrieving trading results.
         trading_service: The trading service to use.
 
     Returns:
         TradingResultResponse: List trading results data based on the filter.
     """
-    trades = await trading_service.get_trading_results(trading_filter)
+    trades = await trading_service.get_trading_results(filters)
     return TradingResultResponse(trades=trades)

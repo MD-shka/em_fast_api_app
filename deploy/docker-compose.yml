@@ -1,0 +1,10 @@
+services:
+  redis:
+    image: redis:alpine
+    env_file:
+      - ../.env
+    environment:
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_HOST=${REDIS_HOST}
+    ports:
+      - "6379:6379"
