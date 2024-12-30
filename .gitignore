@@ -17,6 +17,9 @@ wheels/
 
 # Logs
 */logs/
+*.log
+logs/
+**/logs/
 
 # CodeClimate
 .qlty
