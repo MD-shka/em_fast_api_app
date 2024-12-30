@@ -2,8 +2,7 @@
 
 from fastapi import APIRouter, Depends
 
-from app.api.v1.dependencies import get_trading_service
-from app.core.cache import cache
+from app.dependencies import get_trading_service
 from app.schemas.pydantic_schemas import (
     TradingBaseFilter,
     TradingDatesFilter,
@@ -17,7 +16,6 @@ router = APIRouter()
 
 
 @router.get("/last_trading_dates", response_model=TradingDatesResponse)
-@cache()
 async def get_last_trading_dates(
     filters: TradingDatesFilter = Depends(),
     trading_service: TradingService = Depends(get_trading_service),
@@ -37,7 +35,6 @@ async def get_last_trading_dates(
 
 
 @router.get("/dynamics", response_model=TradingResultResponse)
-@cache()
 async def get_dynamics(
     filters: TradingDinamicsFilter = Depends(),
     trading_service: TradingService = Depends(get_trading_service),
@@ -57,7 +54,6 @@ async def get_dynamics(
 
 
 @router.get("/trading_result", response_model=TradingResultResponse)
-@cache()
 async def get_trading_result(
     filters: TradingBaseFilter = Depends(),
     trading_service: TradingService = Depends(get_trading_service),

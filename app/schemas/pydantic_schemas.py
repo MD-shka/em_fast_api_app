@@ -19,10 +19,7 @@ class TradingResultBase(BaseModel):
     count: int
     date: date
 
-    class Config:
-        """Allow ORM mode."""
-
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class TradingResultResponse(BaseModel):

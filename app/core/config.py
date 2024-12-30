@@ -15,12 +15,12 @@ class Settings(BaseSettings):
     REDIS_HOST: object = model_config.get("REDIS_HOST")
 
     @property
-    def get_db_url(self):
+    def get_db_url(self) -> str:
         """Get database URL."""
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     @property
-    def get_redis_url(self):
+    def get_redis_url(self) -> str:
         """Get redis URL."""
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
 

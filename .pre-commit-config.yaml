@@ -27,6 +27,7 @@ repos:
     rev: 1.8.0
     hooks:
     - id: bandit
+      args: ["-c", "pyproject.toml"]
 # Black
   - repo: https://github.com/psf/black
     rev: 24.10.0
@@ -40,3 +41,4 @@ repos:
     rev: v3.19.0
     hooks:
       - id: pyupgrade
+# Tests

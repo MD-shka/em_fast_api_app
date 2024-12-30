@@ -5,15 +5,14 @@ from functools import wraps
 from typing import Any, Awaitable, Callable
 
 from fastapi.encoders import jsonable_encoder
-from redis.asyncio import Redis  # type: ignore
+from redis.asyncio import Redis
 
-from app.core.config import settings as s
 from app.core.utils import get_expiration_time
 
-redis_client: Redis = Redis.from_url(s.get_redis_url)
 
-
-def cache() -> Callable[[Callable[..., Awaitable[Any]]], Callable[..., Awaitable[Any]]]:
+def cache(
+    redis: Redis, key_builder: Callable[[Callable[..., Awaitable[Any]], tuple[Any, ...], dict[str, Any]], str]
+) -> Callable[[Callable[..., Awaitable[Any]]], Callable[..., Awaitable[Any]]]:
     """Decorator for caching queries."""
 
     def decorator(func: Callable[..., Awaitable[Any]]) -> Callable[..., Awaitable[Any]]:
@@ -22,8 +21,8 @@ def cache() -> Callable[[Callable[..., Awaitable[Any]]], Callable[..., Awaitable
         @wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
             """Wrapper function."""
-            key = f"{func.__name__}:{str(kwargs.get("filters", ""))}"
-            cached = await redis_client.get(key)
+            key = key_builder(func, args, kwargs)
+            cached = await redis.get(key)
 
             if cached:
                 data = json.loads(cached.decode())
@@ -32,8 +31,8 @@ def cache() -> Callable[[Callable[..., Awaitable[Any]]], Callable[..., Awaitable
             result = await func(*args, **kwargs)
             data_to_cache = jsonable_encoder(result)
             expiration_time = get_expiration_time()
-            await redis_client.set(key, json.dumps(data_to_cache))
-            await redis_client.expireat(key, expiration_time)
+            await redis.set(key, json.dumps(data_to_cache))
+            await redis.expireat(key, expiration_time)
             return result
 
         return wrapper
