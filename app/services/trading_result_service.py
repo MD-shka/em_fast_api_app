@@ -2,9 +2,8 @@
 
 import json
 from datetime import date
-from typing import Sequence
+from typing import Any, Sequence
 
-from redis.asyncio import Redis
 from sqlalchemy import Select
 from sqlalchemy.future import select
 
@@ -25,16 +24,16 @@ class TradingService:
         self,
         repository: TradingResultRepository[TradingResultBase],
         date_repository: TradingResultRepository[date],
-        redis: Redis,
+        redis,
     ):
         self.repository = repository
         self.date_repository = date_repository
-        self.redis: Redis = redis
+        self.redis = redis
 
     @staticmethod
     async def __get_filtred_trading_results(
-        stmt: Select, trading_filter: TradingDinamicsFilter | TradingBaseFilter
-    ) -> Select:
+        stmt: Select[Any], trading_filter: TradingDinamicsFilter | TradingBaseFilter
+    ) -> Select[Any]:
         """Get filtered trading results."""
         if trading_filter.oil_id:
             stmt = stmt.filter(Spimex.oil_id == trading_filter.oil_id)
@@ -56,7 +55,7 @@ class TradingService:
             self.redis,
             key_builder=lambda func, args, kwargs: (json.dumps({"limit": kwargs["limit"]}, sort_keys=True)),
         )
-        async def _fetch_data(limit: int):
+        async def _fetch_data(limit: int) -> Sequence[date]:
             stmt = select(Spimex.date).distinct().order_by(Spimex.date.desc()).limit(limit)
             return await self.date_repository.execute_query(stmt)
 
@@ -66,9 +65,12 @@ class TradingService:
         """Get results trading for the period."""
 
         @cache(
-            self.redis, lambda func, args, kwargs: (json.dumps(kwargs["trading_filter"].model_dump(), sort_keys=True))
+            self.redis,
+            lambda func, args, kwargs: (
+                json.dumps(kwargs["trading_filter"].model_dump(), sort_keys=True, default=str)
+            ),
         )
-        async def _fetch_data():
+        async def _fetch_data(trading_filter: TradingDinamicsFilter) -> Sequence[TradingResultBase]:
             stmt = (
                 select(Spimex).order_by(Spimex.date.desc()).limit(trading_filter.limit).offset(trading_filter.offset)
             )
@@ -76,7 +78,7 @@ class TradingService:
             results = await self.repository.execute_query(stmt)
             return [TradingResultBase.model_validate(result) for result in results]
 
-        return await _fetch_data()
+        return await _fetch_data(trading_filter=trading_filter)
 
     async def get_trading_results(self, trading_filter: TradingBaseFilter) -> Sequence[TradingResultBase]:
         """Get last unique trading results."""
@@ -84,7 +86,7 @@ class TradingService:
         @cache(
             self.redis, lambda func, args, kwargs: (json.dumps(kwargs["trading_filter"].model_dump(), sort_keys=True))
         )
-        async def _fetch_data():
+        async def _fetch_data(trading_filter: TradingBaseFilter) -> Sequence[TradingResultBase]:
             stmt = (
                 select(Spimex)
                 .distinct(Spimex.oil_id, Spimex.delivery_type_id, Spimex.delivery_basis_id)
@@ -96,4 +98,4 @@ class TradingService:
             results = await self.repository.execute_query(stmt)
             return [TradingResultBase.model_validate(result) for result in results]
 
-        return await _fetch_data()
+        return await _fetch_data(trading_filter=trading_filter)

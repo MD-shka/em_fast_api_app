@@ -1,6 +1,7 @@
 """Test the cache decorator"""
 
 import json
+from typing import Any, Awaitable, Callable
 
 import pytest
 
@@ -26,7 +27,7 @@ async def test_cache_decorator(mocker, filters, cached_data, expected_result, ex
 
     mocker.patch("app.core.cache.get_expiration_time", return_value=1234567890)
 
-    def test_key_builder(func, args, kwargs):
+    def test_key_builder(func: Callable[..., Awaitable[Any]], args: tuple[Any, ...], kwargs: dict[str, Any]) -> str:
         return f"{func.__name__}:{kwargs.get('filters', None)}"
 
     @cache(redis=mock_redis, key_builder=test_key_builder)
